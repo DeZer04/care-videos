@@ -1,1 +1,119 @@
-# care-videos
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instruction Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #f4f4f4;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        main {
+            padding: 1rem;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+
+        .instruction-item {
+            border: 1px solid #ddd;
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Instruction Hub</h1>
+        <nav>
+            <button onclick="showSection('pdf')">Care and Instruction</button>
+            <button onclick="showSection('video')">Video Tutorial</button>
+            <button onclick="showSection('assembly')">Assembly Instructions</button>
+        </nav>
+    </header>
+    <main>
+        <!-- Care and Instruction PDF -->
+        <div id="pdf" class="content">
+            <h2>Care and Instruction</h2>
+            <embed src="care-instruction.pdf" type="application/pdf" width="100%" height="600px" />
+        </div>
+
+        <!-- Video Tutorial -->
+        <div id="video" class="content">
+            <h2>Tutorial: Taking Care of Chair</h2>
+            <video width="100%" controls>
+                <source src="tutorial.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <!-- Assembly Instructions -->
+        <div id="assembly" class="content">
+            <h2>Assembly Instructions</h2>
+            <input type="text" id="searchInput" placeholder="Search by name..." oninput="filterInstructions()">
+            <div id="instructionsContainer">
+                <!-- Instructions will be dynamically added here -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const instructions = [
+            { name: 'Chair Leg Assembly', content: 'Step-by-step guide to assemble the chair legs.' },
+            { name: 'Backrest Installation', content: 'Instructions for attaching the backrest.' },
+            { name: 'Seat Cushion Attachment', content: 'How to attach the seat cushion.' }
+        ];
+
+        const instructionsContainer = document.getElementById('instructionsContainer');
+
+        function displayInstructions(instructionsList) {
+            instructionsContainer.innerHTML = '';
+            instructionsList.forEach(instruction => {
+                const div = document.createElement('div');
+                div.className = 'instruction-item';
+                div.innerHTML = `<h2>${instruction.name}</h2><p>${instruction.content}</p>`;
+                instructionsContainer.appendChild(div);
+            });
+        }
+
+        function filterInstructions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredInstructions = instructions.filter(instruction =>
+                instruction.name.toLowerCase().includes(searchTerm)
+            );
+            displayInstructions(filteredInstructions);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // Display the PDF section by default
+        showSection('pdf');
+    </script>
+</body>
+</html>
