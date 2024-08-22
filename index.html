@@ -1,26 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instruction Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background-color: #f4f4f4;
-            padding: 1rem;
-            text-align: center;
-        }
-
-        main {
-            padding: 1rem;
-        }
-
         .content {
             display: none;
         }
@@ -28,55 +14,56 @@
         .active {
             display: block;
         }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-            box-sizing: border-box;
-        }
-
-        .instruction-item {
-            border: 1px solid #ddd;
-            margin-bottom: 1rem;
-            padding: 1rem;
-        }
     </style>
 </head>
-<body>
-    <header>
-        <h1>Instruction Hub</h1>
-        <nav>
-            <button onclick="showSection('pdf')">Care and Instruction</button>
-            <button onclick="showSection('video')">Video Tutorial</button>
-            <button onclick="showSection('assembly')">Assembly Instructions</button>
-        </nav>
-    </header>
-    <main>
-        <!-- Care and Instruction PDF -->
-        <div id="pdf" class="content">
-            <h2>Care and Instruction</h2>
-            <embed src="care-instruction.pdf" type="application/pdf" width="100%" height="600px" />
-        </div>
 
-        <!-- Video Tutorial -->
-        <div id="video" class="content">
-            <h2>Tutorial: Taking Care of Chair</h2>
-            <video width="100%" controls>
-                <source src="https://github.com/DeZer04/care-videos/raw/main/src/asset/videos/Care%20Inst.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        </div>
-
-        <!-- Assembly Instructions -->
-        <div id="assembly" class="content">
-            <h2>Assembly Instructions</h2>
-            <input type="text" id="searchInput" placeholder="Search by name..." oninput="filterInstructions()">
-            <div id="instructionsContainer">
-                <!-- Instructions will be dynamically added here -->
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div class="w-1/4 bg-white shadow-lg">
+            <div class="p-4">
+                <h1 class="text-2xl font-bold mb-4 text-center">Instruction Hub</h1>
+                <nav class="flex flex-col space-y-2">
+                    <button class="p-2 text-left bg-gray-200 rounded hover:bg-gray-300 focus:outline-none"
+                        onclick="showSection('pdf')">Care and Instruction</button>
+                    <button class="p-2 text-left bg-gray-200 rounded hover:bg-gray-300 focus:outline-none"
+                        onclick="showSection('video')">Video Tutorial</button>
+                    <button class="p-2 text-left bg-gray-200 rounded hover:bg-gray-300 focus:outline-none"
+                        onclick="showSection('assembly')">Assembly Instructions</button>
+                </nav>
             </div>
         </div>
-    </main>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Care and Instruction PDF -->
+            <div id="pdf" class="content">
+                <h2 class="text-xl font-semibold mb-4">Care and Instruction</h2>
+                <embed src="care-instruction.pdf" type="application/pdf" class="w-full h-screen" />
+            </div>
+
+            <!-- Video Tutorial -->
+            <div id="video" class="content">
+                <h2 class="text-xl font-semibold mb-4">Tutorial: Taking Care of Chair</h2>
+                <video class="w-full" controls>
+                    <source src="https://github.com/DeZer04/care-videos/raw/main/src/asset/videos/Care%20Inst.mp4"
+                        type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <!-- Assembly Instructions -->
+            <div id="assembly" class="content">
+                <h2 class="text-xl font-semibold mb-4">Assembly Instructions</h2>
+                <input type="text" id="searchInput" placeholder="Search by name..."
+                    class="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none"
+                    oninput="filterInstructions()">
+                <div id="instructionsContainer" class="space-y-4">
+                    <!-- Instructions will be dynamically added here -->
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
         const instructions = [
@@ -91,8 +78,8 @@
             instructionsContainer.innerHTML = '';
             instructionsList.forEach(instruction => {
                 const div = document.createElement('div');
-                div.className = 'instruction-item';
-                div.innerHTML = `<h2>${instruction.name}</h2><p>${instruction.content}</p>`;
+                div.className = 'p-4 bg-white border border-gray-200 rounded shadow-sm';
+                div.innerHTML = `<h2 class="text-lg font-bold">${instruction.name}</h2><p>${instruction.content}</p>`;
                 instructionsContainer.appendChild(div);
             });
         }
@@ -116,4 +103,5 @@
         showSection('pdf');
     </script>
 </body>
+
 </html>
