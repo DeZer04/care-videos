@@ -21,15 +21,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Ensures the whole video is covered by the container */
+            object-fit: cover;
         }
 
         .container-header img {
             max-height: 300px;
-        }
-
-        .body {
-            padding-left: 10px;
         }
     </style>
 </head>
@@ -89,12 +85,12 @@
     <section id="assemblySection" class="container mx-auto mt-8 px-4">
         <h2 class="text-xl font-semibold mb-4">Assembly Instructions</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-4 rounded-lg shadow-md cursor-pointer" onclick="openModal('src/asset/instructions/ASSEMBLY MALTA.PDF')">
+            <div class="bg-white p-4 rounded-lg shadow-md" onclick="openModal('src/asset/instructions/ASSEMBLY MALTA.PDF')">
                 <img src="src/asset/picture/malta dining round.jpg" alt="Chair 1" class="w-full h-100 object-cover rounded">
                 <h3 class="text-lg font-bold mt-2">Chair Model 1</h3>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow-md cursor-pointer" onclick="openModal('care-instruction.pdf')">
-                <img src="chair-image-2.jpg" alt="Chair 2" class="w-full h-48 object-cover rounded">
+            <div class="bg-white p-4 rounded-lg shadow-md" onclick="openModal('care-instruction.pdf')">
+                <img src="chair-image-2.jpg" alt="Chair 2" class="w-full h-100 object-cover rounded">
                 <h3 class="text-lg font-bold mt-2">Chair Model 2</h3>
             </div>
             <!-- Add more chair items as needed -->
@@ -102,8 +98,8 @@
     </section>
 
     <!-- Modal -->
-    <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-        <div class="bg-white p-4 rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 h-5/6 relative">
+    <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-50">
+        <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-4xl h-[90%] md:h-[80%] overflow-y-auto">
             <embed id="modal-pdf" src="" type="application/pdf" class="w-full h-full" />
             <button id="modal-close" class="absolute top-0 right-0 m-4 p-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
