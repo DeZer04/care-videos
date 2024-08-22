@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instruction Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.2.6/pdfobject.min.js"></script> <!-- Include PDFObject.js -->
     <style>
         .video-container {
             position: relative;
@@ -33,7 +34,7 @@
 <body class="bg-gray-100 font-sans antialiased">
 
     <!-- Sticky Navbar Centered -->
-    <header class="container bg-white shadow-md py-4 top-5 z-50 w-full mx-auto">
+    <!-- <header class="container bg-white shadow-md py-4 top-5 z-50 w-full mx-auto">
         <div class="container mx-auto flex justify-between items-center px-4">
             <div class="flex items-center">
                 <h1 class="text-xl font-bold">Instruction Hub</h1>
@@ -54,7 +55,7 @@
                 <button class="block w-full px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none" onclick="scrollToSection('assemblySection')">Assembly Instructions</button>
             </div>
         </div>
-    </header>
+    </header> -->
 
     <!-- Image Placeholder -->
     <section class="container container-header mx-auto mt-8 px-4">
@@ -64,13 +65,13 @@
     <!-- Main Content Section -->
     <section id="careSection" class="container mx-auto mt-8 px-4 flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8">
         <!-- PDF Section (3/4) -->
-        <div class="lg:w-3/4 w-full">
+        <div class="lg:w-3/4 w-full max-height">
             <h2 class="text-xl font-semibold mb-4">Care and Instruction</h2>
-            <embed src="src/asset/instructions/page instruction.pdf" type="application/pdf" class="w-full h-screen" />
+            <div id="pdf-container" class="w-full h-screen"></div> <!-- PDFObject container -->
         </div>
 
         <!-- Video Section (1/4) -->
-        <div class="lg:w-1/4 w-full">
+        <div class="lg:w-1/4 w-full max-height">
             <h2 class="text-xl font-semibold mb-4">Video Tutorial</h2>
             <div class="video-container">
                 <video controls>
@@ -100,7 +101,7 @@
     <!-- Modal -->
     <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-50">
         <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-4xl h-[90%] md:h-[80%] overflow-y-auto">
-            <embed id="modal-pdf" src="" type="application/pdf" class="w-full h-full" />
+            <div id="modal-pdf-container" class="w-full h-full"></div> <!-- PDFObject modal container -->
             <button id="modal-close" class="absolute top-0 right-0 m-4 p-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -110,17 +111,18 @@
     </div>
 
     <script>
+        // Embed PDF in the main section using PDFObject
+        PDFObject.embed("src/asset/instructions/page instruction.pdf", "#pdf-container");
+
         function openModal(pdfUrl) {
             const modal = document.getElementById('modal');
-            const modalPdf = document.getElementById('modal-pdf');
-            modalPdf.src = pdfUrl;
+            PDFObject.embed(pdfUrl, "#modal-pdf-container"); // Embed PDF in the modal using PDFObject
             modal.classList.remove('hidden');
         }
 
         function closeModal() {
             const modal = document.getElementById('modal');
-            const modalPdf = document.getElementById('modal-pdf');
-            modalPdf.src = '';
+            document.getElementById('modal-pdf-container').innerHTML = ''; // Clear the PDFObject
             modal.classList.add('hidden');
         }
 
