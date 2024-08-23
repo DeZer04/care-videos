@@ -27,6 +27,23 @@
         .container-header img {
             max-height: 300px;
         }
+
+        #pdf-container {
+            width: 100%;
+            max-height: 650px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+        }
+
+        .pdf-page {
+            margin-bottom: 10px;
+        }
+
+        .pdf-page img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
     </style>
 </head>
 
@@ -62,16 +79,13 @@
     </section>
 
     <!-- Main Content Section -->
-    <section id="careSection" class="container mx-auto mt-8 px-4 flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8">
+    <section id="careSection" class="container mx-auto mt-8 px-4 flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 bg-white">
         <!-- PDF Section (3/4) -->
         <div class="lg:w-3/4 w-full max-height">
-            <h2 class="text-xl font-semibold mb-4">Care and Instruction</h2>
-            <iframe 
-                    class="pdf"
-                    src="src/asset/instructions/page instruction.pdf"
-                    style="width:100%; height:650px;" 
-                    frameborder="0">
-            </iframe>
+            <h2 class="text-xl font-semibold mb-4 top-5">Care and Instruction</h2>
+            <div id="pdf-container">
+                <!-- PDF Pages will be rendered here as images -->
+            </div>
         </div>
 
         <!-- Video Section (1/4) -->
@@ -86,8 +100,51 @@
         </div>
     </section>
 
+    <!-- PDF.js Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
     <script>
+        const url = 'src/asset/instructions/page instruction.pdf';
 
+        let pdfDoc = null,
+            pageNum = 1,
+            scale = 1.5,
+            pdfContainer = document.getElementById('pdf-container');
+
+        // Renders a page into an image
+        function renderPageAsImage(num) {
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+
+                page.render(renderContext).promise.then(function() {
+                    const img = document.createElement('img');
+                    img.src = canvas.toDataURL('image/png');
+                    img.className = 'pdf-page';
+                    pdfContainer.appendChild(img);
+
+                    if (num < pdfDoc.numPages) {
+                        renderPageAsImage(num + 1);
+                    }
+                });
+            });
+        }
+
+        function loadPdf() {
+            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+                pdfDoc = pdfDoc_;
+                renderPageAsImage(pageNum);
+            });
+        }
+
+        loadPdf();
     </script>
 </body>
 
