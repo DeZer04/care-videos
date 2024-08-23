@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instruction Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.2.6/pdfobject.min.js"></script> <!-- Include PDFObject.js -->
     <style>
         .video-container {
             position: relative;
@@ -67,7 +66,12 @@
         <!-- PDF Section (3/4) -->
         <div class="lg:w-3/4 w-full max-height">
             <h2 class="text-xl font-semibold mb-4">Care and Instruction</h2>
-            <div id="pdf-container" class="w-full h-screen"></div> <!-- PDFObject container -->
+            <iframe 
+                    class="pdf"
+                    src="/src/asset/instructions/page instruction.pdf"
+                    style="width:100%; height:650px;" 
+                    frameborder="0">
+            </iframe>
         </div>
 
         <!-- Video Section (1/4) -->
@@ -75,7 +79,7 @@
             <h2 class="text-xl font-semibold mb-4">Video Tutorial</h2>
             <div class="video-container">
                 <video controls>
-                    <source src="https://github.com/DeZer04/care-videos/raw/main/src/asset/videos/Care%20Inst.mp4" type="video/mp4">
+                    <source src="/src/asset/videos/Care Inst.mp4" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             </div>
@@ -101,7 +105,11 @@
     <!-- Modal -->
     <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-50">
         <div class="bg-white p-4 rounded-lg shadow-md w-full max-w-4xl h-[90%] md:h-[80%] overflow-y-auto">
-            <div id="modal-pdf-container" class="w-full h-full"></div> <!-- PDFObject modal container -->
+            <iframe id="modal-pdf" 
+                    src="" 
+                    width="100%" 
+                    height="100%" 
+                    style="border: none;"></iframe> <!-- PDF iframe for modal -->
             <button id="modal-close" class="absolute top-0 right-0 m-4 p-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -111,18 +119,17 @@
     </div>
 
     <script>
-        // Embed PDF in the main section using PDFObject
-        PDFObject.embed("src/asset/instructions/page instruction.pdf", "#pdf-container");
-
         function openModal(pdfUrl) {
             const modal = document.getElementById('modal');
-            PDFObject.embed(pdfUrl, "#modal-pdf-container"); // Embed PDF in the modal using PDFObject
+            const modalPdf = document.getElementById('modal-pdf');
+            modalPdf.src = `/web/viewer.html?file=${pdfUrl}`; // Set PDF iframe src
             modal.classList.remove('hidden');
         }
 
         function closeModal() {
             const modal = document.getElementById('modal');
-            document.getElementById('modal-pdf-container').innerHTML = ''; // Clear the PDFObject
+            const modalPdf = document.getElementById('modal-pdf');
+            modalPdf.src = ''; // Clear the iframe src
             modal.classList.add('hidden');
         }
 
