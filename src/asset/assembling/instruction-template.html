@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .pdf-container {
+            width: 100%;
+            max-height: 650px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+        }
+
+        .pdf-page {
+            margin-bottom: 10px;
+        }
+
+        .pdf-page img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .product-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .product-images img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans antialiased">
+    <section class="container mx-auto mt-8 px-4">
+        <h1 class="text-2xl font-bold mb-4">{{TITLE}}</h1>
+
+        <!-- Product Images Section -->
+        <div class="product-images mb-8">
+            {{PRODUCT_IMAGES}}
+        </div>
+
+        <!-- PDF Assembling Instruction Section -->
+        <div id="pdf-container" class="pdf-container">
+            <!-- PDF Pages will be rendered here as images -->
+        </div>
+    </section>
+
+    <!-- PDF.js Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
+    <script>
+        const url = '{{PDF_URL}}';
+
+        let pdfDoc = null,
+            pageNum = 1,
+            scale = 1.5,
+            pdfContainer = document.getElementById('pdf-container');
+
+        // Renders a page into an image
+        function renderPageAsImage(num) {
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+
+                page.render(renderContext).promise.then(function() {
+                    const img = document.createElement('img');
+                    img.src = canvas.toDataURL('image/png');
+                    img.className = 'pdf-page';
+                    pdfContainer.appendChild(img);
+
+                    if (num < pdfDoc.numPages) {
+                        renderPageAsImage(num + 1);
+                    }
+                });
+            });
+        }
+
+        function loadPdf() {
+            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+                pdfDoc = pdfDoc_;
+                renderPageAsImage(pageNum);
+            });
+        }
+
+        loadPdf();
+    </script>
+</body>
+
+</html>

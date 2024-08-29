@@ -10,7 +10,8 @@
         .video-container {
             position: relative;
             width: 100%;
-            padding-bottom: 177.78%; /* 9:16 Aspect Ratio for vertical videos */
+            padding-bottom: 177.78%;
+            /* 9:16 Aspect Ratio for vertical videos */
             background-color: #000;
             overflow: hidden;
         }
@@ -28,50 +29,31 @@
             max-height: 300px;
         }
 
-        #pdf-container {
-            width: 100%;
-            max-height: 650px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
+        #flipbook {
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            position: relative;
+            background-color: #fff;
         }
 
         .pdf-page {
-            margin-bottom: 10px;
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
-        .pdf-page img {
+        .flipbook-page {
             width: 100%;
-            height: auto;
-            display: block;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
     </style>
 </head>
 
 <body class="bg-gray-100 font-sans antialiased">
-
-    <!-- Sticky Navbar Centered -->
-    <!-- <header class="container bg-white shadow-md py-4 top-5 z-50 w-full mx-auto">
-        <div class="container mx-auto flex justify-between items-center px-4">
-            <div class="flex items-center">
-                <h1 class="text-xl font-bold">Instruction Hub</h1>
-            </div>
-            <button id="menu-toggle" class="lg:hidden px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                </svg>
-            </button>
-            <nav id="menu" class="hidden lg:flex lg:space-x-4">
-                <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none" onclick="scrollToSection('careSection')">Care and Instruction</button>
-                <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none" onclick="scrollToSection('assemblySection')">Assembly Instructions</button>
-            </nav>
-        </div>
-        <div id="mobile-menu" class="lg:hidden hidden absolute top-16 left-0 w-full bg-white shadow-md">
-            <div class="container mx-auto py-4 px-4">
-                <button class="block w-full px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none" onclick="scrollToSection('careSection')">Care and Instruction</button>
-                <button class="block w-full px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none" onclick="scrollToSection('assemblySection')">Assembly Instructions</button>
-            </div>
-        </div>
-    </header> -->
 
     <!-- Image Placeholder -->
     <section class="container container-header mx-auto mt-8 px-4">
@@ -82,15 +64,15 @@
     <section id="careSection" class="container mx-auto mt-8 px-4 flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 bg-white">
         <!-- PDF Section (3/4) -->
         <div class="lg:w-3/4 w-full max-height">
-            <h2 class="text-xl font-semibold mb-4 top-5">Care and Instruction</h2>
-            <div id="pdf-container">
-                <!-- PDF Pages will be rendered here as images -->
+            <h2 class="mt-5 text-xl font-semibold mb-4 top-5">Care and Instruction</h2>
+            <div id="flipbook" class="shadow-lg">
+                <!-- PDF Pages will be rendered here as flipbook -->
             </div>
         </div>
 
         <!-- Video Section (1/4) -->
         <div class="lg:w-1/4 w-full max-height">
-            <h2 class="text-xl font-semibold mb-4">Video Tutorial</h2>
+            <h2 class="mt-5 text-xl font-semibold mb-4">Video Tutorial</h2>
             <div class="video-container">
                 <video controls>
                     <source src="https://github.com/DeZer04/care-videos/raw/main/src/asset/videos/Care%20Inst.mp4" type="video/mp4">
@@ -100,19 +82,40 @@
         </div>
     </section>
 
-    <!-- PDF.js Script -->
+    <!-- Load Turn.js and PDF.js -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
     <script>
-        const url = 'src/asset/instructions/page instruction.pdf';
+        // Set up workerSrc for PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.worker.min.js';
 
-        let pdfDoc = null,
-            pageNum = 1,
-            scale = 1.5,
-            pdfContainer = document.getElementById('pdf-container');
+        const url = 'src/asset/instructions/review page instruction 6 page.pdf';
+        let pdfDoc = null;
 
-        // Renders a page into an image
-        function renderPageAsImage(num) {
-            pdfDoc.getPage(num).then(function(page) {
+        const flipbook = $('#flipbook');
+
+        // Initialize flipbook
+        flipbook.turn({
+            width: 800,
+            height: 600,
+            autoCenter: true,
+            display: 'double',
+            acceleration: true,
+            gradients: !$.isTouch,
+            elevation: 50,
+            when: {
+                turned: function (e, page) {
+                    console.log('Current view: ', $(this).turn('view'));
+                }
+            }
+        });
+
+        // Function to render PDF page as image
+        async function renderPage(num) {
+            try {
+                const page = await pdfDoc.getPage(num);
+                const scale = 1.5;
                 const viewport = page.getViewport({ scale });
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
@@ -124,27 +127,37 @@
                     viewport: viewport
                 };
 
-                page.render(renderContext).promise.then(function() {
-                    const img = document.createElement('img');
-                    img.src = canvas.toDataURL('image/png');
-                    img.className = 'pdf-page';
-                    pdfContainer.appendChild(img);
+                await page.render(renderContext).promise;
+                
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'flipbook-page';
+                pageDiv.style.backgroundImage = `url(${canvas.toDataURL('image/png')})`;
 
-                    if (num < pdfDoc.numPages) {
-                        renderPageAsImage(num + 1);
-                    }
-                });
-            });
+                flipbook.turn('addPage', pageDiv, num);
+                console.log(`Page ${num} added to flipbook.`);
+            } catch (error) {
+                console.error(`Error rendering page ${num}:`, error);
+            }
         }
 
-        function loadPdf() {
-            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
-                pdfDoc = pdfDoc_;
-                renderPageAsImage(pageNum);
-            });
+        // Function to load PDF and render pages
+        async function loadPdf() {
+            try {
+                pdfDoc = await pdfjsLib.getDocument(url).promise;
+                console.log(`PDF loaded with ${pdfDoc.numPages} pages.`);
+                for (let num = 1; num <= pdfDoc.numPages; num++) {
+                    await renderPage(num);
+                }
+                flipbook.turn('page', 1);
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+            }
         }
 
-        loadPdf();
+        // Load PDF when document is ready
+        $(document).ready(function() {
+            loadPdf();
+        });
     </script>
 </body>
 
