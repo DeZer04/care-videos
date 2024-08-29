@@ -41,10 +41,13 @@
             top: 0;
             left: 0;
             width: 100vw;
-            height: auto; /* Adjust height to auto for fullscreen */
+            height: 100vh; /* Use 100vh for fullscreen */
             max-width: none;
             z-index: 9999;
             background: white;
+            display: flex; /* Use flex to center content */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
         }
 
         #flipbook {
@@ -174,7 +177,17 @@
     
         function setFlipbookHeight() {
             const containerWidth = flipbookContainer.width();
-            const calculatedHeight = containerWidth / pdfAspectRatio;
+            let calculatedHeight = containerWidth / pdfAspectRatio;
+
+            // If in fullscreen mode, adjust height for mobile
+            if (flipbookContainer.hasClass('fullscreen')) {
+                if (window.innerWidth <= 768) { // Check for mobile devices
+                    calculatedHeight = window.innerHeight * 0.95; // Allow some margin
+                } else {
+                    calculatedHeight = $(window).height(); // Use full window height
+                }
+            }
+
             flipbookContainer.height(calculatedHeight);
             resizeFlipbook();
         }
@@ -274,7 +287,7 @@
             } else {
                 $(this).text('Fullscreen');
             }
-            setFlipbookHeight();
+            setFlipbookHeight(); // Adjust height on toggle
         });
     
         $(document).keydown(function(e) {
@@ -304,6 +317,82 @@
             setFlipbookHeight();
         });
     
+        $(window).resize(function() {
+            setFlipbookHeight();
+        });
+
+        let isDragging = false;
+        let startX;
+
+        function handlePageTurn(direction) {
+            if (direction === 'next') {
+                flipbook.turn('next');
+            } else {
+                flipbook.turn('previous');
+            }
+        }
+
+        flipbookContainer.on('mousedown', function(e) {
+            isDragging = true;
+            startX = e.pageX; // Record the starting mouse position
+            flipbookContainer.css('cursor', 'grabbing'); // Change cursor to grabbing
+        });
+
+        flipbookContainer.on('touchstart', function(e) {
+            isDragging = true;
+            startX = e.touches[0].pageX; // Record the starting touch position
+        });
+
+        flipbookContainer.on('mousedown', function(e) {
+            isDragging = true;
+            startX = e.pageX; // Record the starting mouse position
+            flipbookContainer.css('cursor', 'grabbing'); // Change cursor to grabbing
+        });
+
+        $(document).on('mouseup touchend', function() {
+            isDragging = false;
+            flipbookContainer.css('cursor', ''); // Reset cursor
+        });
+
+        $(document).on('mousemove touchmove', function(e) {
+            if (isDragging) {
+                const currentX = e.type === 'mousemove' ? e.pageX : e.touches[0].pageX; // Use the appropriate position
+                const diffX = currentX - startX; // Calculate the difference
+
+                // Determine if the swipe is sufficient
+                if (Math.abs(diffX) > 50) {
+                    if (diffX > 0) { // Swipe right
+                        handlePageTurn('previous');
+                    } else { // Swipe left
+                        handlePageTurn('next');
+                    }
+                    isDragging = false; // Stop dragging after turning
+                }
+            }
+        });
+
+        // Existing keyboard navigation
+        $(document).keydown(function(e) {
+            switch(e.which) {
+                case 37: // left arrow
+                    flipbook.turn('previous');
+                    console.log('Left arrow pressed');
+                    break;
+                case 39: // right arrow
+                    flipbook.turn('next');
+                    console.log('Right arrow pressed');
+                    break;
+                default: return;
+            }
+            e.preventDefault();
+        });
+
+        // Existing resizing logic
+        $(document).ready(function() {
+            loadPdf();
+            setFlipbookHeight();
+        });
+
         $(window).resize(function() {
             setFlipbookHeight();
         });
