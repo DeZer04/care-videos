@@ -11,7 +11,6 @@
             position: relative;
             width: 100%;
             padding-bottom: 177.78%;
-            /* 9:16 Aspect Ratio for vertical videos */
             background-color: #000;
             overflow: hidden;
         }
@@ -29,26 +28,42 @@
             max-height: 300px;
         }
 
-        #flipbook {
-            width: 800px;
-            height: 600px;
+        #flipbook-container {
+            width: 100%;
+            max-width: 800px;
             margin: auto;
             position: relative;
-            background-color: #fff;
+            height: 600px; /* Fixed height */
         }
 
-        .pdf-page {
+        #flipbook {
             width: 100%;
             height: 100%;
-            display: block;
         }
 
         .flipbook-page {
-            width: 100%;
-            height: 100%;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        #prev-button {
+            left: 10px;
+        }
+
+        #next-button {
+            right: 10px;
         }
     </style>
 </head>
@@ -57,21 +72,25 @@
 
     <!-- Image Placeholder -->
     <section class="container container-header mx-auto mt-8 px-4">
-        <img src="src/asset/picture/landing page[1].png" alt="Fullwidth Image" class="w-full h-100 object-cover rounded">
+        <img src="src/asset/picture/landing page[1].png" alt="Fullwidth Image" class="w-full h-auto object-cover rounded">
     </section>
 
     <!-- Main Content Section -->
     <section id="careSection" class="container mx-auto mt-8 px-4 flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 bg-white">
-        <!-- PDF Section (3/4) -->
-        <div class="lg:w-3/4 w-full max-height">
+        <!-- PDF Section -->
+        <div class="lg:w-3/4 w-full">
             <h2 class="mt-5 text-xl font-semibold mb-4 top-5">Care and Instruction</h2>
-            <div id="flipbook" class="shadow-lg">
-                <!-- PDF Pages will be rendered here as flipbook -->
+            <div id="flipbook-container">
+                <div id="flipbook">
+                    <!-- PDF Pages will be rendered here as flipbook -->
+                </div>
+                <div id="prev-button" class="nav-button">&#10094;</div>
+                <div id="next-button" class="nav-button">&#10095;</div>
             </div>
         </div>
 
-        <!-- Video Section (1/4) -->
-        <div class="lg:w-1/4 w-full max-height">
+        <!-- Video Section -->
+        <div class="lg:w-1/4 w-full">
             <h2 class="mt-5 text-xl font-semibold mb-4">Video Tutorial</h2>
             <div class="video-container">
                 <video controls>
@@ -90,26 +109,37 @@
         // Set up workerSrc for PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.worker.min.js';
 
-        const url = 'src/asset/instructions/review page instruction 6 page.pdf';
+        const url = 'src/asset/instructions/care instruction.pdf';
         let pdfDoc = null;
+        let flipbookInitialized = false;
 
         const flipbook = $('#flipbook');
 
-        // Initialize flipbook
-        flipbook.turn({
-            width: 800,
-            height: 600,
-            autoCenter: true,
-            display: 'double',
-            acceleration: true,
-            gradients: !$.isTouch,
-            elevation: 50,
-            when: {
-                turned: function (e, page) {
-                    console.log('Current view: ', $(this).turn('view'));
+        // Function to initialize flipbook
+        function initializeFlipbook() {
+            if (flipbookInitialized) return;
+            
+            flipbook.turn({
+                width: $('#flipbook-container').width(),
+                height: $('#flipbook-container').height(),
+                autoCenter: true,
+                display: 'double',
+                acceleration: true,
+                gradients: true,
+                elevation: 50,
+                when: {
+                    turning: function(event, page, view) {
+                        console.log('Turning to page: ', page);
+                    },
+                    turned: function(event, page, view) {
+                        console.log('Current view: ', view);
+                    }
                 }
-            }
-        });
+            });
+            
+            flipbookInitialized = true;
+            console.log('Flipbook initialized');
+        }
 
         // Function to render PDF page as image
         async function renderPage(num) {
@@ -129,11 +159,16 @@
 
                 await page.render(renderContext).promise;
                 
-                const pageDiv = document.createElement('div');
-                pageDiv.className = 'flipbook-page';
-                pageDiv.style.backgroundImage = `url(${canvas.toDataURL('image/png')})`;
+                const pageDiv = $('<div>', {
+                    class: 'flipbook-page',
+                    css: {
+                        backgroundImage: `url(${canvas.toDataURL('image/png')})`,
+                        width: '100%',
+                        height: '100%'
+                    }
+                });
 
-                flipbook.turn('addPage', pageDiv, num);
+                flipbook.turn('addPage', pageDiv);
                 console.log(`Page ${num} added to flipbook.`);
             } catch (error) {
                 console.error(`Error rendering page ${num}:`, error);
@@ -145,18 +180,55 @@
             try {
                 pdfDoc = await pdfjsLib.getDocument(url).promise;
                 console.log(`PDF loaded with ${pdfDoc.numPages} pages.`);
+                initializeFlipbook();
                 for (let num = 1; num <= pdfDoc.numPages; num++) {
                     await renderPage(num);
                 }
                 flipbook.turn('page', 1);
+                console.log('All pages added to flipbook');
             } catch (error) {
                 console.error('Error loading PDF:', error);
             }
         }
 
+        // Navigation buttons
+        $('#prev-button').on('click', function() {
+            flipbook.turn('previous');
+            console.log('Previous button clicked');
+        });
+
+        $('#next-button').on('click', function() {
+            flipbook.turn('next');
+            console.log('Next button clicked');
+        });
+
+        // Keyboard navigation
+        $(document).keydown(function(e) {
+            switch(e.which) {
+                case 37: // left arrow
+                    flipbook.turn('previous');
+                    console.log('Left arrow pressed');
+                    break;
+                case 39: // right arrow
+                    flipbook.turn('next');
+                    console.log('Right arrow pressed');
+                    break;
+                default: return;
+            }
+            e.preventDefault();
+        });
+
         // Load PDF when document is ready
         $(document).ready(function() {
             loadPdf();
+        });
+
+        // Adjust flipbook size on window resize
+        $(window).resize(function() {
+            if (flipbookInitialized) {
+                flipbook.turn('size', $('#flipbook-container').width(), $('#flipbook-container').height());
+                console.log('Flipbook resized');
+            }
         });
     </script>
 </body>
