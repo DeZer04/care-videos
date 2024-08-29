@@ -33,7 +33,18 @@
             max-width: 800px;
             margin: auto;
             position: relative;
-            height: 600px; /* Fixed height */
+            height: auto;
+        }
+
+        #flipbook-container.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: auto; /* Adjust height to auto for fullscreen */
+            max-width: none;
+            z-index: 9999;
+            background: white;
         }
 
         #flipbook {
@@ -45,6 +56,25 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 1001;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #000;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
 
         .nav-button {
@@ -78,15 +108,13 @@
             border-radius: 5px;
         }
 
-        #flipbook-container.fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            z-index: 9999;
-            background: white;
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -104,6 +132,9 @@
         <div class="lg:w-3/4 w-full">
             <h2 class="mt-5 text-xl font-semibold mb-4 top-5">Care and Instruction</h2>
             <div id="flipbook-container">
+                <div id="loading-overlay" class="loading-overlay flex items-center justify-center">
+                    <div class="spinner"></div>
+                </div>
                 <div id="flipbook">
                     <!-- PDF Pages will be rendered here as flipbook -->
                 </div>
@@ -132,15 +163,22 @@
     <script>
         // Set up workerSrc for PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.worker.min.js';
-
+    
         const url = 'src/asset/instructions/care instruction.pdf';
         let pdfDoc = null;
         let flipbookInitialized = false;
-
         const flipbook = $('#flipbook');
         const flipbookContainer = $('#flipbook-container');
-
-        // Function to initialize flipbook
+        
+        const pdfAspectRatio = 1.41; // Adjust to your PDF's aspect ratio (e.g., A4 is 210mm x 297mm)
+    
+        function setFlipbookHeight() {
+            const containerWidth = flipbookContainer.width();
+            const calculatedHeight = containerWidth / pdfAspectRatio;
+            flipbookContainer.height(calculatedHeight);
+            resizeFlipbook();
+        }
+    
         function initializeFlipbook() {
             if (flipbookInitialized) return;
             
@@ -165,8 +203,7 @@
             flipbookInitialized = true;
             console.log('Flipbook initialized');
         }
-
-        // Function to render PDF page as image
+    
         async function renderPage(num) {
             try {
                 const page = await pdfDoc.getPage(num);
@@ -176,12 +213,12 @@
                 const ctx = canvas.getContext('2d');
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
-
+    
                 const renderContext = {
                     canvasContext: ctx,
                     viewport: viewport
                 };
-
+    
                 await page.render(renderContext).promise;
                 
                 const pageDiv = $('<div>', {
@@ -192,15 +229,18 @@
                         height: '100%'
                     }
                 });
-
+    
                 flipbook.turn('addPage', pageDiv);
                 console.log(`Page ${num} added to flipbook.`);
             } catch (error) {
                 console.error(`Error rendering page ${num}:`, error);
             }
         }
-
-        // Function to load PDF and render pages
+    
+        function hideLoadingOverlay() {
+            $('#loading-overlay').fadeOut();
+        }
+    
         async function loadPdf() {
             try {
                 pdfDoc = await pdfjsLib.getDocument(url).promise;
@@ -210,24 +250,23 @@
                     await renderPage(num);
                 }
                 flipbook.turn('page', 1);
+                hideLoadingOverlay();
                 console.log('All pages added to flipbook');
             } catch (error) {
                 console.error('Error loading PDF:', error);
             }
         }
-
-        // Navigation buttons
+    
         $('#prev-button').on('click', function() {
             flipbook.turn('previous');
             console.log('Previous button clicked');
         });
-
+    
         $('#next-button').on('click', function() {
             flipbook.turn('next');
             console.log('Next button clicked');
         });
-
-        // Fullscreen button
+    
         $('#fullscreen-button').on('click', function() {
             flipbookContainer.toggleClass('fullscreen');
             if (flipbookContainer.hasClass('fullscreen')) {
@@ -235,10 +274,9 @@
             } else {
                 $(this).text('Fullscreen');
             }
-            resizeFlipbook();
+            setFlipbookHeight();
         });
-
-        // Keyboard navigation
+    
         $(document).keydown(function(e) {
             switch(e.which) {
                 case 37: // left arrow
@@ -253,25 +291,24 @@
             }
             e.preventDefault();
         });
-
-        // Function to resize flipbook
+    
         function resizeFlipbook() {
             if (flipbookInitialized) {
                 flipbook.turn('size', flipbookContainer.width(), flipbookContainer.height());
                 console.log('Flipbook resized');
             }
         }
-
-        // Load PDF when document is ready
+    
         $(document).ready(function() {
             loadPdf();
+            setFlipbookHeight();
         });
-
-        // Adjust flipbook size on window resize
+    
         $(window).resize(function() {
-            resizeFlipbook();
+            setFlipbookHeight();
         });
     </script>
+    
 </body>
 
 </html>
