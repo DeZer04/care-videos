@@ -67,22 +67,26 @@
         }
 
         #fullscreen-button {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
+            position: absolute;
+            top: 10px;
+            right: 10px;
             background-color: rgba(0,0,0,0.5);
             color: white;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 5px 10px;
             cursor: pointer;
+            z-index: 1000;
+            border-radius: 5px;
         }
 
-        @media (max-width: 768px) {
-            #fullscreen-button {
-                display: block;
-            }
+        #flipbook-container.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            z-index: 9999;
+            background: white;
         }
     </style>
 </head>
@@ -105,9 +109,7 @@
                 </div>
                 <div id="prev-button" class="nav-button">&#10094;</div>
                 <div id="next-button" class="nav-button">&#10095;</div>
-                <button id="fullscreen-button" class="text-sm">
-                    Fullscreen
-                </button>
+                <button id="fullscreen-button">Fullscreen</button>
             </div>
         </div>
 
@@ -136,14 +138,15 @@
         let flipbookInitialized = false;
 
         const flipbook = $('#flipbook');
+        const flipbookContainer = $('#flipbook-container');
 
         // Function to initialize flipbook
         function initializeFlipbook() {
             if (flipbookInitialized) return;
             
             flipbook.turn({
-                width: $('#flipbook-container').width(),
-                height: $('#flipbook-container').height(),
+                width: flipbookContainer.width(),
+                height: flipbookContainer.height(),
                 autoCenter: true,
                 display: 'double',
                 acceleration: true,
@@ -224,6 +227,17 @@
             console.log('Next button clicked');
         });
 
+        // Fullscreen button
+        $('#fullscreen-button').on('click', function() {
+            flipbookContainer.toggleClass('fullscreen');
+            if (flipbookContainer.hasClass('fullscreen')) {
+                $(this).text('Exit Fullscreen');
+            } else {
+                $(this).text('Fullscreen');
+            }
+            resizeFlipbook();
+        });
+
         // Keyboard navigation
         $(document).keydown(function(e) {
             switch(e.which) {
@@ -240,6 +254,14 @@
             e.preventDefault();
         });
 
+        // Function to resize flipbook
+        function resizeFlipbook() {
+            if (flipbookInitialized) {
+                flipbook.turn('size', flipbookContainer.width(), flipbookContainer.height());
+                console.log('Flipbook resized');
+            }
+        }
+
         // Load PDF when document is ready
         $(document).ready(function() {
             loadPdf();
@@ -247,56 +269,8 @@
 
         // Adjust flipbook size on window resize
         $(window).resize(function() {
-            if (flipbookInitialized) {
-                flipbook.turn('size', $('#flipbook-container').width(), $('#flipbook-container').height());
-                console.log('Flipbook resized');
-            }
+            resizeFlipbook();
         });
-        
-        // Fullscreen functionality
-        const fullscreenButton = document.getElementById('fullscreen-button');
-        
-        fullscreenButton.addEventListener('click', toggleFullScreen);
-
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-                    document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-                    document.documentElement.msRequestFullscreen();
-                }
-                fullscreenButton.textContent = 'Exit Fullscreen';
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) { // Firefox
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) { // IE/Edge
-                    document.msExitFullscreen();
-                }
-                fullscreenButton.textContent = 'Fullscreen';
-            }
-        }
-
-        // Update button text when fullscreen state changes
-        document.addEventListener('fullscreenchange', updateFullscreenButtonText);
-        document.addEventListener('webkitfullscreenchange', updateFullscreenButtonText);
-        document.addEventListener('mozfullscreenchange', updateFullscreenButtonText);
-        document.addEventListener('MSFullscreenChange', updateFullscreenButtonText);
-
-        function updateFullscreenButtonText() {
-            if (document.fullscreenElement) {
-                fullscreenButton.textContent = 'Exit Fullscreen';
-            } else {
-                fullscreenButton.textContent = 'Fullscreen';
-            }
-        }
     </script>
 </body>
 
