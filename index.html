@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instruction Hub</title>
+    <title>Teak Care Wood</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .video-container {
@@ -152,7 +152,7 @@
             <h2 class="mt-5 text-xl font-semibold mb-4">Video Tutorial</h2>
             <div class="video-container">
                 <video controls>
-                    <source src="https://github.com/DeZer04/care-videos/raw/main/src/asset/videos/Care%20Inst.mp4" type="video/mp4">
+                    <source src="https://github.com/DeZer04/care-videos/raw/main/src/asset/videos/Care%20Inst_1.mp4" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             </div>
@@ -316,7 +316,7 @@
             loadPdf();
             setFlipbookHeight();
         });
-    
+
         $(window).resize(function() {
             setFlipbookHeight();
         });
@@ -332,69 +332,40 @@
             }
         }
 
-        flipbookContainer.on('mousedown', function(e) {
+        flipbookContainer.on('mousedown touchstart', function(e) {
             isDragging = true;
-            startX = e.pageX; // Record the starting mouse position
-            flipbookContainer.css('cursor', 'grabbing'); // Change cursor to grabbing
-        });
-
-        flipbookContainer.on('touchstart', function(e) {
-            isDragging = true;
-            startX = e.touches[0].pageX; // Record the starting touch position
-        });
-
-        flipbookContainer.on('mousedown', function(e) {
-            isDragging = true;
-            startX = e.pageX; // Record the starting mouse position
-            flipbookContainer.css('cursor', 'grabbing'); // Change cursor to grabbing
+            startX = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX;
+            flipbookContainer.css('cursor', 'grabbing');
         });
 
         $(document).on('mouseup touchend', function() {
             isDragging = false;
-            flipbookContainer.css('cursor', ''); // Reset cursor
+            flipbookContainer.css('cursor', '');
         });
 
         $(document).on('mousemove touchmove', function(e) {
             if (isDragging) {
-                const currentX = e.type === 'mousemove' ? e.pageX : e.touches[0].pageX; // Use the appropriate position
-                const diffX = currentX - startX; // Calculate the difference
+                const currentX = e.type === 'mousemove' ? e.pageX : e.touches[0].pageX;
+                const diffX = currentX - startX;
 
-                // Determine if the swipe is sufficient
                 if (Math.abs(diffX) > 50) {
-                    if (diffX > 0) { // Swipe right
-                        handlePageTurn('previous');
-                    } else { // Swipe left
-                        handlePageTurn('next');
-                    }
-                    isDragging = false; // Stop dragging after turning
+                    handlePageTurn(diffX > 0 ? 'previous' : 'next');
+                    isDragging = false;
                 }
             }
         });
 
-        // Existing keyboard navigation
         $(document).keydown(function(e) {
             switch(e.which) {
                 case 37: // left arrow
                     flipbook.turn('previous');
-                    console.log('Left arrow pressed');
                     break;
                 case 39: // right arrow
                     flipbook.turn('next');
-                    console.log('Right arrow pressed');
                     break;
                 default: return;
             }
             e.preventDefault();
-        });
-
-        // Existing resizing logic
-        $(document).ready(function() {
-            loadPdf();
-            setFlipbookHeight();
-        });
-
-        $(window).resize(function() {
-            setFlipbookHeight();
         });
     </script>
     
